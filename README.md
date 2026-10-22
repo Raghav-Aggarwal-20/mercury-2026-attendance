@@ -1,8 +1,10 @@
 # Phoenix Mercury 2026 home attendance
 
+![Announced attendance by home game](output/attendance_by_game.png)
+
 A look at announced attendance for the Mercury's 22 regular-season home games in 2026, to see what moved crowds in a 16-28 season.
 
-Dashboard: [add link after sharing]
+Interactive version: https://raghav-aggarwal-20.github.io/mercury-2026-attendance/
 
 ## Findings
 
@@ -26,7 +28,7 @@ pip install -r requirements.txt
 python src/analyze.py
 ```
 
-The script loads the CSV into SQLite with `sql/schema.sql`, runs the queries in `sql/analysis.sql` (totals, repeated figures, splits), and writes medians to `output/median_summary.csv`. Medians are computed in pandas because SQLite has no median function.
+The script loads the CSV into SQLite with `sql/schema.sql`, runs the queries in `sql/analysis.sql` (totals, repeated figures, splits), and writes medians to `output/median_summary.csv`. It also draws the chart above to `output/attendance_by_game.png` and writes the interactive version to `docs/index.html`, which GitHub Pages serves. Medians are computed in pandas because SQLite has no median function.
 
 ## What would come next with internal data
 
