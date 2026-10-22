@@ -4,27 +4,376 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mercury 2026 Attendance</title>
+<meta name="description" content="Announced attendance for the Phoenix Mercury's 22 regular-season home games in 2026.">
 <style>
-  body { margin: 0; background: #fff; color: #1d1d1f; font: 16px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
-  h1 { font-size: 1.5rem; margin: 0 0 4px; }
-  p { margin: 0 0 12px; color: #555; }
-  .key span { display: inline-block; width: 12px; height: 12px; margin: 0 4px -1px 12px; }
-  .key span:first-child { margin-left: 0; }
-  a { color: #1f5fa8; }
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --border: rgba(11,11,11,0.10);
+    --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7;
+    --accent: #6250d6; --flag: #eb6834; --rest: #cfcec7;
+    --wash: rgba(98,80,214,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --border: rgba(255,255,255,0.10);
+      --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835;
+      --accent: #9085e9; --flag: #d95926; --rest: #4a4945;
+      --wash: rgba(144,133,233,0.12);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --border: rgba(255,255,255,0.10);
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835;
+    --accent: #9085e9; --flag: #d95926; --rest: #4a4945;
+    --wash: rgba(144,133,233,0.12);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 48px; }
+  .eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 6px; font-weight: 600; }
+  .eyebrow::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px;
+                     background: var(--accent); margin-right: 8px; vertical-align: 0; }
+  h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.15; margin: 0 0 8px; letter-spacing: -.01em; }
+  .lede { color: var(--ink-2); margin: 0 0 24px; max-width: 62ch; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+
+  .tiles { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .tile { padding: 16px 18px; }
+  .tile .label { font-size: 13px; color: var(--ink-2); }
+  .tile .value { font-size: 26px; font-weight: 600; margin-top: 2px; }
+  .tile .sub { font-size: 13px; color: var(--muted); }
+  .tile.hero .value { font-size: 48px; line-height: 1.05; letter-spacing: -.02em; }
+  @media (max-width: 760px) { .tiles { grid-template-columns: repeat(3, 1fr); } .tile.hero { grid-column: 1 / -1; } }
+  @media (max-width: 520px) { .tiles { grid-template-columns: 1fr 1fr; } .tile:last-child { grid-column: 1 / -1; } }
+
+  .panel { padding: 18px 18px 10px; }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .controls .label { font-size: 13px; color: var(--ink-2); margin-right: 4px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button { font: inherit; font-size: 13px; border: 1px solid var(--border); background: transparent; color: var(--ink);
+                padding: 6px 12px; border-radius: 999px; cursor: pointer; transition: background .15s, border-color .15s; }
+  .seg button:hover { background: var(--wash); }
+  .seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .seg button:focus-visible, .hit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .readout { display: grid; grid-template-columns: auto auto 1fr; gap: 4px 24px; align-items: baseline;
+             padding: 12px 14px; border-radius: 10px; background: var(--wash); margin-bottom: 8px; }
+  .readout .stat { min-width: 0; }
+  .readout .stat b { font-size: 20px; font-weight: 600; }
+  .readout .stat span { color: var(--ink-2); font-size: 13px; }
+  .readout .insight { color: var(--ink-2); font-size: 14px; }
+  .key { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: 0; }
+  @media (max-width: 640px) { .readout { grid-template-columns: 1fr; gap: 2px; } }
+
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; overflow: visible; }
+  .chart text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .chart text { paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+  .chart .lbl-ink { fill: var(--ink); font-weight: 600; }
+  .chart .lbl-2 { fill: var(--ink-2); }
+  .bar { transition: fill .35s ease, opacity .2s; }
+  .bars.hovering .bar:not(.on) { opacity: .45; }
+  .hit { fill: transparent; cursor: pointer; outline: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    .grow .bar { animation: grow .7s cubic-bezier(.2,.7,.2,1) both; transform-box: fill-box; transform-origin: bottom; }
+    @keyframes grow { from { transform: scaleY(0); } }
+  }
+  .tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--border);
+         border-radius: 10px; padding: 10px 12px; font-size: 13px; min-width: 190px; max-width: 260px;
+         box-shadow: 0 8px 24px rgba(0,0,0,.12); opacity: 0; transform: translateY(4px); transition: opacity .12s, transform .12s; }
+  .tip.show { opacity: 1; transform: none; }
+  .tip .v { font-size: 20px; font-weight: 600; }
+  .tip .m { color: var(--ink-2); }
+  .tip .n { color: var(--ink-2); margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-2); padding: 6px 2px 8px; }
+  .legend i { display: inline-block; vertical-align: middle; margin-right: 6px; }
+  .legend .sw { width: 10px; height: 10px; border-radius: 3px; }
+  .legend .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--flag); }
+  .legend .ln { width: 16px; height: 0; border-top: 1.5px solid var(--ink-2); }
+  .legend .ln.dash { border-top-style: dashed; border-color: var(--muted); }
+
+  h2 { font-size: 18px; margin: 32px 0 12px; }
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .note { padding: 14px 16px; }
+  .note h3 { font-size: 14px; margin: 0 0 4px; }
+  .note p { margin: 0; color: var(--ink-2); font-size: 14px; }
+
+  details { margin-top: 16px; }
+  summary { cursor: pointer; color: var(--ink-2); font-size: 14px; padding: 12px 16px; }
+  .tablewrap { overflow-x: auto; padding: 0 16px 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  th { color: var(--ink-2); font-weight: 600; }
+  td.num, th.num { text-align: right; }
+  footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
+  footer a { color: var(--ink-2); }
 </style>
 </head>
 <body>
 <main>
-  <h1>Phoenix Mercury 2026 home attendance</h1>
-  <p>Announced attendance for all 22 regular-season home games, in date order. Hover or tap a bar for details.</p>
-  <p class="key"><span style="background:#1f5fa8"></span>Three largest crowds
-    <span style="background:#b8bcc2"></span>Other games
-    <span style="background:#b8bcc2;outline:2px solid #c62828;outline-offset:-2px"></span>Repeated official figure (confirmed on WNBA.com)</p>
-  <div style="height:480px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-4.1.1.min.js" integrity="sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=" crossorigin="anonymous"></script>                <div id="chart" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("chart")) {                    Plotly.newPlot(                        "chart",                        [{"hoverinfo":"text","hovertext":["\u003cb\u003eMay 12 vs Minnesota\u003c\u002fb\u003e (L)\u003cbr\u003eTue, Playoff team\u003cbr\u003eAttendance: 10,826 (63.4% of capacity)\u003cbr\u003eRecord going in: 1-1","\u003cb\u003eMay 15 vs Chicago\u003c\u002fb\u003e (W)\u003cbr\u003eFri, Non-playoff team\u003cbr\u003eAttendance: 11,094 (65.0% of capacity)\u003cbr\u003eRecord going in: 1-2","\u003cb\u003eMay 19 vs Toronto\u003c\u002fb\u003e (L)\u003cbr\u003eTue, Non-playoff team\u003cbr\u003eAttendance: 9,337 (54.7% of capacity)\u003cbr\u003eRecord going in: 2-2","\u003cb\u003eMay 21 vs Los Angeles\u003c\u002fb\u003e (L)\u003cbr\u003eThu, Non-playoff team\u003cbr\u003eAttendance: 10,953 (64.2% of capacity)\u003cbr\u003eRecord going in: 2-3","\u003cb\u003eJun 1 vs Minnesota\u003c\u002fb\u003e (L)\u003cbr\u003eMon, Playoff team\u003cbr\u003eAttendance: 9,234 (54.1% of capacity)\u003cbr\u003eRecord going in: 2-7\u003cbr\u003e\u003cspan style='color:#c62828'\u003eRepeated official figure (confirmed on WNBA.com)\u003c\u002fspan\u003e","\u003cb\u003eJun 13 vs Los Angeles\u003c\u002fb\u003e (L)\u003cbr\u003eSat, Non-playoff team\u003cbr\u003eAttendance: 9,234 (54.1% of capacity)\u003cbr\u003eRecord going in: 4-10\u003cbr\u003e\u003cspan style='color:#c62828'\u003eRepeated official figure (confirmed on WNBA.com)\u003c\u002fspan\u003e","\u003cb\u003eJun 17 vs Las Vegas\u003c\u002fb\u003e (L)\u003cbr\u003eWed, Playoff team\u003cbr\u003eAttendance: 9,234 (54.1% of capacity)\u003cbr\u003eRecord going in: 4-11\u003cbr\u003e\u003cspan style='color:#c62828'\u003eRepeated official figure (confirmed on WNBA.com)\u003c\u002fspan\u003e","\u003cb\u003eJun 20 vs Seattle\u003c\u002fb\u003e (W)\u003cbr\u003eSat, Non-playoff team\u003cbr\u003eAttendance: 9,662 (56.6% of capacity)\u003cbr\u003eRecord going in: 4-12","\u003cb\u003eJul 2 vs Seattle\u003c\u002fb\u003e (W)\u003cbr\u003eThu, Non-playoff team\u003cbr\u003eAttendance: 10,055 (58.9% of capacity)\u003cbr\u003eRecord going in: 7-13","\u003cb\u003eJul 7 vs Chicago\u003c\u002fb\u003e (L)\u003cbr\u003eTue, Non-playoff team\u003cbr\u003eAttendance: 9,586 (56.2% of capacity)\u003cbr\u003eRecord going in: 8-13","\u003cb\u003eJul 9 vs Indiana\u003c\u002fb\u003e (L)\u003cbr\u003eThu, Playoff team\u003cbr\u003eAttendance: 17,071 (100.0% of capacity)\u003cbr\u003eRecord going in: 8-14","\u003cb\u003eJul 17 vs Connecticut\u003c\u002fb\u003e (L)\u003cbr\u003eFri, Non-playoff team\u003cbr\u003eAttendance: 10,321 (60.5% of capacity)\u003cbr\u003eRecord going in: 8-17\u003cbr\u003e\u003cspan style='color:#c62828'\u003eRepeated official figure (confirmed on WNBA.com)\u003c\u002fspan\u003e","\u003cb\u003eJul 19 vs Connecticut\u003c\u002fb\u003e (W)\u003cbr\u003eSun, Non-playoff team\u003cbr\u003eAttendance: 13,481 (79.0% of capacity)\u003cbr\u003eRecord going in: 8-18","\u003cb\u003eJul 29 vs Golden State\u003c\u002fb\u003e (W)\u003cbr\u003eWed, Playoff team\u003cbr\u003eAttendance: 10,152 (59.5% of capacity)\u003cbr\u003eRecord going in: 10-18","\u003cb\u003eAug 1 vs New York\u003c\u002fb\u003e (L)\u003cbr\u003eSat, Playoff team\u003cbr\u003eAttendance: 10,097 (59.1% of capacity)\u003cbr\u003eRecord going in: 11-18","\u003cb\u003eAug 16 vs Portland\u003c\u002fb\u003e (L)\u003cbr\u003eSun, Non-playoff team\u003cbr\u003eAttendance: 16,513 (96.7% of capacity)\u003cbr\u003eRecord going in: 13-22","\u003cb\u003eAug 22 vs Atlanta\u003c\u002fb\u003e (L)\u003cbr\u003eSat, Playoff team\u003cbr\u003eAttendance: 12,431 (72.8% of capacity)\u003cbr\u003eRecord going in: 13-23","\u003cb\u003eAug 25 vs Washington\u003c\u002fb\u003e (L)\u003cbr\u003eTue, Playoff team\u003cbr\u003eAttendance: 10,459 (61.3% of capacity)\u003cbr\u003eRecord going in: 13-24","\u003cb\u003eAug 27 vs Washington\u003c\u002fb\u003e (L)\u003cbr\u003eThu, Playoff team\u003cbr\u003eAttendance: 9,040 (53.0% of capacity)\u003cbr\u003eRecord going in: 13-25","\u003cb\u003eAug 29 vs Toronto\u003c\u002fb\u003e (W)\u003cbr\u003eSat, Non-playoff team\u003cbr\u003eAttendance: 11,699 (68.5% of capacity)\u003cbr\u003eRecord going in: 13-26","\u003cb\u003eSep 21 vs Dallas\u003c\u002fb\u003e (W)\u003cbr\u003eMon, Playoff team\u003cbr\u003eAttendance: 11,941 (69.9% of capacity)\u003cbr\u003eRecord going in: 15-27","\u003cb\u003eSep 24 vs Las Vegas\u003c\u002fb\u003e (L)\u003cbr\u003eThu, Playoff team\u003cbr\u003eAttendance: 12,385 (72.5% of capacity)\u003cbr\u003eRecord going in: 16-27"],"marker":{"color":["#b8bcc2","#b8bcc2","#b8bcc2","#b8bcc2","#b8bcc2","#b8bcc2","#b8bcc2","#b8bcc2","#b8bcc2","#b8bcc2","#1f5fa8","#b8bcc2","#1f5fa8","#b8bcc2","#b8bcc2","#1f5fa8","#b8bcc2","#b8bcc2","#b8bcc2","#b8bcc2","#b8bcc2","#b8bcc2"],"line":{"color":["rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)","#c62828","#c62828","#c62828","rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)","#c62828","rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)","rgba(0,0,0,0)"],"width":[0,0,0,0,2,2,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0]}},"x":["May 12","May 15","May 19","May 21","Jun 1","Jun 13","Jun 17","Jun 20","Jul 2","Jul 7","Jul 9","Jul 17","Jul 19","Jul 29","Aug 1","Aug 16","Aug 22","Aug 25","Aug 27","Aug 29","Sep 21","Sep 24"],"y":{"dtype":"i2","bdata":"SipWK3kkySoSJBIkEiS+JUcnciWvQlEoqTSoJ3EngUCPMNsoUCOzLaUuYTA="},"type":"bar"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"shapes":[{"line":{"dash":"dash","width":1},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":17071,"y1":17071,"yref":"y"},{"line":{"width":1},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":10390.0,"y1":10390.0,"yref":"y"}],"annotations":[{"bgcolor":"rgba(255,255,255,0.8)","showarrow":false,"text":"Capacity (17,071)","x":1,"xanchor":"right","xref":"x domain","y":17071,"yanchor":"bottom","yref":"y"},{"bgcolor":"rgba(255,255,255,0.8)","showarrow":false,"text":"Median (10,390)","x":1,"xanchor":"right","xref":"x domain","y":10390.0,"yanchor":"bottom","yref":"y"}],"yaxis":{"title":{"text":"Announced attendance"},"tickformat":",","range":[0,18436.68]},"xaxis":{"type":"category","tickangle":-45},"margin":{"t":20,"r":10,"l":60,"b":70},"showlegend":false,"autosize":true,"height":480},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div>
-  <p>Source: 2026 Phoenix Mercury season game log, checked against WNBA.com box scores.
-    Code and full write-up: <a href="https://github.com/Raghav-Aggarwal-20/mercury-2026-attendance">GitHub repo</a>.</p>
+  <p class="eyebrow">Phoenix Mercury · 2026 regular season</p>
+  <h1>Crowds grew as the season went on, even as the losses piled up</h1>
+  <p class="lede">Announced attendance for all 22 home games in a 16-28 season. Pick a lens below to see which games drew bigger crowds, then hover or tap any game for details.</p>
+
+  <section class="tiles" id="tiles" aria-label="Season summary"></section>
+
+  <section class="card panel" aria-label="Attendance by game">
+    <div class="controls">
+      <span class="label">Highlight</span>
+      <div class="seg" id="modes" role="group" aria-label="Highlight games"></div>
+    </div>
+    <div class="readout" id="readout" aria-live="polite"></div>
+    <div class="chart" id="chart"><div class="tip" id="tip" role="tooltip"></div></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <h2>What stood out</h2>
+  <div class="notes">
+    <div class="card note"><h3>Three games carried the average</h3><p>Indiana (Jul 9), Portland (Aug 16) and Connecticut (Jul 19) pulled the average above the median, so the median is the better guide to a typical night.</p></div>
+    <div class="card note"><h3>Star power is hard to read</h3><p>Aug 16 drew 16,513 though Kelsey Plum sat out injured. Her only home appearance, Aug 25, drew 10,459. Aug 16 was a Sunday, which may matter more.</p></div>
+    <div class="card note"><h3>Four figures repeat</h3><p>Three June games all list 9,234, and Jul 17 matches a road crowd in Las Vegas. All four match WNBA.com box scores, so they stay in, flagged.</p></div>
+  </div>
+
+  <details class="card">
+    <summary>View all 22 games as a table</summary>
+    <div class="tablewrap"><table id="table"></table></div>
+  </details>
+
+  <footer>Source: game log on the 2026 Phoenix Mercury season Wikipedia page, checked against WNBA.com box scores. Attendance is the announced figure. Code and full write-up on <a href="https://github.com/Raghav-Aggarwal-20/mercury-2026-attendance">GitHub</a>.</footer>
 </main>
+
+<script>
+const DATA = {"capacity": 17071, "games": [{"date": "2026-05-12", "day": "12", "label": "May 12", "month": "May", "weekday": "Tue", "weekend": "Weekday", "opponent": "Minnesota", "opp_playoff": "Playoff team", "result": "L", "attendance": 10826, "pct": 63.4, "record": "1-1", "flag": ""}, {"date": "2026-05-15", "day": "15", "label": "May 15", "month": "May", "weekday": "Fri", "weekend": "Weekend", "opponent": "Chicago", "opp_playoff": "Non-playoff team", "result": "W", "attendance": 11094, "pct": 65.0, "record": "1-2", "flag": ""}, {"date": "2026-05-19", "day": "19", "label": "May 19", "month": "May", "weekday": "Tue", "weekend": "Weekday", "opponent": "Toronto", "opp_playoff": "Non-playoff team", "result": "L", "attendance": 9337, "pct": 54.7, "record": "2-2", "flag": ""}, {"date": "2026-05-21", "day": "21", "label": "May 21", "month": "May", "weekday": "Thu", "weekend": "Weekday", "opponent": "Los Angeles", "opp_playoff": "Non-playoff team", "result": "L", "attendance": 10953, "pct": 64.2, "record": "2-3", "flag": ""}, {"date": "2026-06-01", "day": "1", "label": "Jun 1", "month": "Jun", "weekday": "Mon", "weekend": "Weekday", "opponent": "Minnesota", "opp_playoff": "Playoff team", "result": "L", "attendance": 9234, "pct": 54.1, "record": "2-7", "flag": "Repeated official figure (confirmed on WNBA.com)"}, {"date": "2026-06-13", "day": "13", "label": "Jun 13", "month": "Jun", "weekday": "Sat", "weekend": "Weekend", "opponent": "Los Angeles", "opp_playoff": "Non-playoff team", "result": "L", "attendance": 9234, "pct": 54.1, "record": "4-10", "flag": "Repeated official figure (confirmed on WNBA.com)"}, {"date": "2026-06-17", "day": "17", "label": "Jun 17", "month": "Jun", "weekday": "Wed", "weekend": "Weekday", "opponent": "Las Vegas", "opp_playoff": "Playoff team", "result": "L", "attendance": 9234, "pct": 54.1, "record": "4-11", "flag": "Repeated official figure (confirmed on WNBA.com)"}, {"date": "2026-06-20", "day": "20", "label": "Jun 20", "month": "Jun", "weekday": "Sat", "weekend": "Weekend", "opponent": "Seattle", "opp_playoff": "Non-playoff team", "result": "W", "attendance": 9662, "pct": 56.6, "record": "4-12", "flag": ""}, {"date": "2026-07-02", "day": "2", "label": "Jul 2", "month": "Jul", "weekday": "Thu", "weekend": "Weekday", "opponent": "Seattle", "opp_playoff": "Non-playoff team", "result": "W", "attendance": 10055, "pct": 58.9, "record": "7-13", "flag": ""}, {"date": "2026-07-07", "day": "7", "label": "Jul 7", "month": "Jul", "weekday": "Tue", "weekend": "Weekday", "opponent": "Chicago", "opp_playoff": "Non-playoff team", "result": "L", "attendance": 9586, "pct": 56.2, "record": "8-13", "flag": ""}, {"date": "2026-07-09", "day": "9", "label": "Jul 9", "month": "Jul", "weekday": "Thu", "weekend": "Weekday", "opponent": "Indiana", "opp_playoff": "Playoff team", "result": "L", "attendance": 17071, "pct": 100.0, "record": "8-14", "flag": ""}, {"date": "2026-07-17", "day": "17", "label": "Jul 17", "month": "Jul", "weekday": "Fri", "weekend": "Weekend", "opponent": "Connecticut", "opp_playoff": "Non-playoff team", "result": "L", "attendance": 10321, "pct": 60.5, "record": "8-17", "flag": "Repeated official figure (confirmed on WNBA.com)"}, {"date": "2026-07-19", "day": "19", "label": "Jul 19", "month": "Jul", "weekday": "Sun", "weekend": "Weekend", "opponent": "Connecticut", "opp_playoff": "Non-playoff team", "result": "W", "attendance": 13481, "pct": 79.0, "record": "8-18", "flag": ""}, {"date": "2026-07-29", "day": "29", "label": "Jul 29", "month": "Jul", "weekday": "Wed", "weekend": "Weekday", "opponent": "Golden State", "opp_playoff": "Playoff team", "result": "W", "attendance": 10152, "pct": 59.5, "record": "10-18", "flag": ""}, {"date": "2026-08-01", "day": "1", "label": "Aug 1", "month": "Aug", "weekday": "Sat", "weekend": "Weekend", "opponent": "New York", "opp_playoff": "Playoff team", "result": "L", "attendance": 10097, "pct": 59.1, "record": "11-18", "flag": ""}, {"date": "2026-08-16", "day": "16", "label": "Aug 16", "month": "Aug", "weekday": "Sun", "weekend": "Weekend", "opponent": "Portland", "opp_playoff": "Non-playoff team", "result": "L", "attendance": 16513, "pct": 96.7, "record": "13-22", "flag": ""}, {"date": "2026-08-22", "day": "22", "label": "Aug 22", "month": "Aug", "weekday": "Sat", "weekend": "Weekend", "opponent": "Atlanta", "opp_playoff": "Playoff team", "result": "L", "attendance": 12431, "pct": 72.8, "record": "13-23", "flag": ""}, {"date": "2026-08-25", "day": "25", "label": "Aug 25", "month": "Aug", "weekday": "Tue", "weekend": "Weekday", "opponent": "Washington", "opp_playoff": "Playoff team", "result": "L", "attendance": 10459, "pct": 61.3, "record": "13-24", "flag": ""}, {"date": "2026-08-27", "day": "27", "label": "Aug 27", "month": "Aug", "weekday": "Thu", "weekend": "Weekday", "opponent": "Washington", "opp_playoff": "Playoff team", "result": "L", "attendance": 9040, "pct": 53.0, "record": "13-25", "flag": ""}, {"date": "2026-08-29", "day": "29", "label": "Aug 29", "month": "Aug", "weekday": "Sat", "weekend": "Weekend", "opponent": "Toronto", "opp_playoff": "Non-playoff team", "result": "W", "attendance": 11699, "pct": 68.5, "record": "13-26", "flag": ""}, {"date": "2026-09-21", "day": "21", "label": "Sep 21", "month": "Sep", "weekday": "Mon", "weekend": "Weekday", "opponent": "Dallas", "opp_playoff": "Playoff team", "result": "W", "attendance": 11941, "pct": 69.9, "record": "15-27", "flag": ""}, {"date": "2026-09-24", "day": "24", "label": "Sep 24", "month": "Sep", "weekday": "Thu", "weekend": "Weekday", "opponent": "Las Vegas", "opp_playoff": "Playoff team", "result": "L", "attendance": 12385, "pct": 72.5, "record": "16-27", "flag": ""}]};
+const CAP = DATA.capacity;
+const G = DATA.games;
+const NOTES = {
+  "2026-07-09": "Only sellout of the season",
+  "2026-08-16": "First home game after Kelsey Plum's Phoenix debut (she sat out injured)",
+  "2026-08-25": "Kelsey Plum's only home appearance",
+};
+const fmt = n => Math.round(n).toLocaleString("en-US");
+const median = a => { const s = [...a].sort((x, y) => x - y), m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const ALL_MED = median(G.map(g => g.attendance));
+const TOP3 = new Set([...G].sort((a, b) => b.attendance - a.attendance).slice(0, 3).map(g => g.date));
+
+const MODES = [
+  { id: "top", label: "Top crowds", on: "Three largest crowds", off: "Other games",
+    test: g => TOP3.has(g.date),
+    insight: "These three nights pull the season average to 11,128, well above the 10,390 median." },
+  { id: "second", label: "July–Sept", on: "July–Sept", off: "May–June",
+    test: g => !["May", "Jun"].includes(g.month),
+    insight: "Crowds grew in the second half even though the team won only 5 of those 14 games." },
+  { id: "weekend", label: "Fri–Sun", on: "Fri–Sun", off: "Mon–Thu",
+    test: g => g.weekend === "Weekend",
+    insight: "Weekend games drew a bigger typical crowd than weeknights." },
+  { id: "playoff", label: "Playoff opponents", on: "vs playoff teams", off: "vs non-playoff teams",
+    test: g => g.opp_playoff === "Playoff team",
+    insight: "Opponent quality barely moved the typical crowd." },
+  { id: "wins", label: "Wins", on: "Wins", off: "Losses",
+    test: g => g.result === "W",
+    insight: "Wins drew more, but 5 of the 7 home wins came in July–Sept, when crowds were bigger anyway." },
+];
+let mode = MODES[0];
+
+// ---- tiles
+(function tiles() {
+  const avg = G.reduce((s, g) => s + g.attendance, 0) / G.length;
+  const best = [...G].sort((a, b) => b.attendance - a.attendance)[0];
+  const h1 = G.filter(g => ["May", "Jun"].includes(g.month)).map(g => g.attendance);
+  const h2 = G.filter(g => !["May", "Jun"].includes(g.month)).map(g => g.attendance);
+  const items = [
+    { cls: "hero", label: "Typical home crowd (median)", value: fmt(ALL_MED), sub: `${(ALL_MED / CAP * 100).toFixed(1)}% of the ${fmt(CAP)}-seat capacity` },
+    { label: "Average crowd", value: fmt(avg), sub: "Lifted by three big nights" },
+    { label: "Biggest crowd", value: fmt(best.attendance), sub: `Sellout · ${best.label} vs ${best.opponent}` },
+    { label: "July–Sept median", value: fmt(median(h2)), sub: `Up from ${fmt(median(h1))} in May–June` },
+  ];
+  const root = document.getElementById("tiles");
+  for (const t of items) {
+    const d = document.createElement("div");
+    d.className = "card tile " + (t.cls || "");
+    for (const [k, v] of [["label", t.label], ["value", t.value], ["sub", t.sub]]) {
+      const e = document.createElement("div"); e.className = k; e.textContent = v; d.appendChild(e);
+    }
+    root.appendChild(d);
+  }
+})();
+
+// ---- mode buttons
+const modesEl = document.getElementById("modes");
+for (const m of MODES) {
+  const b = document.createElement("button");
+  b.type = "button"; b.textContent = m.label; b.dataset.id = m.id;
+  b.setAttribute("aria-pressed", m === mode);
+  b.addEventListener("click", () => { mode = m; update(); });
+  modesEl.appendChild(b);
+}
+
+function readout() {
+  const on = G.filter(mode.test).map(g => g.attendance), off = G.filter(g => !mode.test(g)).map(g => g.attendance);
+  const a = median(on), b = median(off), diff = a - b;
+  const el = document.getElementById("readout");
+  el.replaceChildren();
+  const stat = (color, name, med, n) => {
+    const d = document.createElement("div"); d.className = "stat";
+    const k = document.createElement("i"); k.className = "key"; k.style.background = color;
+    const v = document.createElement("b"); v.textContent = fmt(med);
+    const s = document.createElement("span"); s.textContent = ` median · ${name} (${n} games)`;
+    d.append(k, v, s); return d;
+  };
+  const ins = document.createElement("div"); ins.className = "insight";
+  ins.textContent = `${diff >= 0 ? "+" : "−"}${fmt(Math.abs(diff))} difference. ${mode.insight}`;
+  el.append(stat("var(--accent)", mode.on, a, on.length), stat("var(--rest)", mode.off, b, off.length), ins);
+}
+
+function legend() {
+  const el = document.getElementById("legend");
+  el.replaceChildren();
+  const add = (cls, style, text) => {
+    const s = document.createElement("span"); const i = document.createElement("i");
+    i.className = cls; if (style) i.style.background = style;
+    s.append(i, document.createTextNode(text)); el.appendChild(s);
+  };
+  add("sw", "var(--accent)", mode.on);
+  add("sw", "var(--rest)", mode.off);
+  add("dot", null, "Repeated official figure");
+  add("ln", null, `Season median (${fmt(ALL_MED)})`);
+  add("ln dash", null, `Capacity (${fmt(CAP)})`);
+}
+
+// ---- chart
+const NS = "http://www.w3.org/2000/svg";
+const chartEl = document.getElementById("chart"), tip = document.getElementById("tip");
+const svgEl = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+let svg, firstDraw = true;
+
+function draw() {
+  const W = chartEl.clientWidth, narrow = W < 560;
+  const H = narrow ? 300 : 360, m = { t: 30, r: 8, b: 44, l: narrow ? 34 : 44 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b, n = G.length, band = pw / n;
+  const bw = Math.min(24, band * 0.72), YMAX = 18000;
+  const y = v => m.t + ph * (1 - v / YMAX), x = i => m.l + band * i + band / 2;
+
+  if (svg) svg.remove();
+  svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img",
+    "aria-label": "Column chart of announced attendance for each 2026 home game" });
+  chartEl.insertBefore(svg, tip);
+
+  // grid + y ticks
+  for (let v = 0; v <= 15000; v += 5000) {
+    svgEl("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: v ? "var(--grid)" : "var(--axis)", "stroke-width": 1 }, svg);
+    svgEl("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = v ? `${v / 1000}K` : "0";
+  }
+  // season halves
+  const split = G.findIndex(g => !["May", "Jun"].includes(g.month));
+  const sx = m.l + band * split;
+  svgEl("line", { x1: sx, x2: sx, y1: m.t - 18, y2: y(0), stroke: "var(--grid)", "stroke-width": 1 }, svg);
+  svgEl("text", { x: sx - 8, y: m.t - 8, "text-anchor": "end", class: "lbl-2" }, svg).textContent = "May–June";
+  svgEl("text", { x: sx + 8, y: m.t - 8, class: "lbl-2" }, svg).textContent = "July–Sept";
+
+  // bars
+  const bars = svgEl("g", { class: "bars" + (firstDraw ? " grow" : "") }, svg);
+  const barEls = G.map((g, i) => {
+    const x0 = x(i) - bw / 2, y0 = y(g.attendance), h = y(0) - y0, r = Math.min(4, bw / 2);
+    const d = `M${x0},${y(0)} V${y0 + r} Q${x0},${y0} ${x0 + r},${y0} H${x0 + bw - r} Q${x0 + bw},${y0} ${x0 + bw},${y0 + r} V${y(0)} Z`;
+    const p = svgEl("path", { d, class: "bar" }, bars);
+    if (firstDraw) p.style.animationDelay = `${i * 25}ms`;
+    return p;
+  });
+
+  // reference lines (drawn over bars)
+  svgEl("line", { x1: m.l, x2: W - m.r, y1: y(CAP), y2: y(CAP), stroke: "var(--muted)", "stroke-width": 1, "stroke-dasharray": "4 4" }, svg);
+  svgEl("text", { x: W - m.r, y: y(CAP) - 6, "text-anchor": "end" }, svg).textContent = `Capacity ${fmt(CAP)}`;
+  svgEl("line", { x1: m.l, x2: W - m.r, y1: y(ALL_MED), y2: y(ALL_MED), stroke: "var(--ink-2)", "stroke-width": 1.5 }, svg);
+  const ml = svgEl("text", { x: W - m.r, y: y(ALL_MED) - 6, "text-anchor": "end", class: "lbl-2" }, svg);
+  ml.textContent = `Median ${fmt(ALL_MED)}`;
+
+  // flag dots + selective value labels
+  G.forEach((g, i) => {
+    if (g.flag) svgEl("circle", { cx: x(i), cy: y(g.attendance) - 8, r: 4, fill: "var(--flag)", stroke: "var(--surface)", "stroke-width": 2 }, svg);
+    if (TOP3.has(g.date) && !narrow) {
+      const t = svgEl("text", { x: x(i), y: y(g.attendance) - 8, "text-anchor": "middle", class: "lbl-ink" }, svg);
+      t.textContent = g.attendance >= CAP ? "Sellout" : fmt(g.attendance);
+      if (g.attendance >= CAP) t.setAttribute("y", y(g.attendance) - 22);
+    }
+  });
+
+  // x axis: day under each bar, month at first game of month
+  const step = band < 18 ? 2 : 1;
+  let prevMonth = null;
+  G.forEach((g, i) => {
+    if (i % step === 0) svgEl("text", { x: x(i), y: y(0) + 16, "text-anchor": "middle" }, svg).textContent = g.day;
+    if (g.month !== prevMonth) {
+      svgEl("text", { x: x(i) - bw / 2, y: y(0) + 34, class: "lbl-2" }, svg).textContent = g.month;
+      prevMonth = g.month;
+    }
+  });
+
+  // hit targets (full band, keyboard focusable)
+  G.forEach((g, i) => {
+    const h = svgEl("rect", { x: m.l + band * i, y: m.t - 10, width: band, height: y(0) - m.t + 10, class: "hit", tabindex: 0,
+      "aria-label": `${g.weekday} ${g.label} vs ${g.opponent}, ${g.result === "W" ? "win" : "loss"}: ${fmt(g.attendance)}` }, svg);
+    const show = () => { bars.classList.add("hovering"); barEls.forEach((b, j) => b.classList.toggle("on", j === i)); showTip(g, x(i), y(g.attendance), W); };
+    const hide = () => { bars.classList.remove("hovering"); tip.classList.remove("show"); };
+    h.addEventListener("pointerenter", show); h.addEventListener("focus", show);
+    h.addEventListener("pointerleave", hide); h.addEventListener("blur", hide);
+  });
+
+  svg._bars = barEls;
+  paint();
+  firstDraw = false;
+}
+
+function showTip(g, cx, cy, W) {
+  tip.replaceChildren();
+  const line = (cls, text) => { const d = document.createElement("div"); d.className = cls; d.textContent = text; tip.appendChild(d); };
+  line("v", fmt(g.attendance));
+  line("m", `${g.weekday} ${g.label} · vs ${g.opponent} (${g.result === "W" ? "W" : "L"})`);
+  line("m", `${g.pct.toFixed(1)}% of capacity · ${g.record} going in`);
+  line("m", g.opp_playoff === "Playoff team" ? "Opponent made the playoffs" : "Opponent missed the playoffs");
+  const notes = [NOTES[g.date], g.flag].filter(Boolean);
+  if (notes.length) line("n", notes.join(". "));
+  tip.classList.add("show");
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  let left = cx + 18; if (left + tw > W) left = cx - tw - 18;
+  left = Math.max(0, left);
+  const top = Math.max(0, Math.min(chartEl.clientHeight - th, cy - th / 2));
+  tip.style.left = left + "px"; tip.style.top = top + "px";
+}
+
+function paint() {
+  if (!svg) return;
+  svg._bars.forEach((b, i) => b.setAttribute("fill", mode.test(G[i]) ? "var(--accent)" : "var(--rest)"));
+}
+
+function update() {
+  for (const b of modesEl.children) b.setAttribute("aria-pressed", b.dataset.id === mode.id);
+  readout(); legend(); paint();
+}
+
+// ---- table
+(function table() {
+  const t = document.getElementById("table");
+  const cols = [["Date", g => `${g.weekday} ${g.label}`], ["Opponent", g => g.opponent], ["Result", g => g.result],
+    ["Attendance", g => fmt(g.attendance), "num"], ["% capacity", g => g.pct.toFixed(1), "num"],
+    ["Record going in", g => g.record], ["Opponent status", g => g.opp_playoff], ["Flag", g => g.flag]];
+  const hr = t.createTHead().insertRow();
+  cols.forEach(([h, , c]) => { const th = document.createElement("th"); th.textContent = h; if (c) th.className = c; hr.appendChild(th); });
+  const tb = t.createTBody();
+  G.forEach(g => { const r = tb.insertRow(); cols.forEach(([, f, c]) => { const td = r.insertCell(); td.textContent = f(g); if (c) td.className = c; }); });
+})();
+
+update();
+draw();
+new ResizeObserver(() => { if (svg && Math.abs(svg.viewBox.baseVal.width - chartEl.clientWidth) > 2) draw(); }).observe(chartEl);
+</script>
 </body>
 </html>
